@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Diagnosis</title>
+
+  <style>
+    :root {
+      --sidebar-green: #619769;
+      --main-bg: #D9F9D1;
+      --button-green: #51D05E;
+      --card-gray: #D9D9D9;
+      --text-dark: #1E1E1E;
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Inika', serif;
+      background-color: var(--main-bg);
+      display: flex;
+      height: 100vh;
+      color: var(--text-dark);
+    }
+
+    .sidebar {
+      background-color: var(--sidebar-green);
+      width: 250px;
+      transition: width 0.3s ease;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+
+    .sidebar.collapsed {
+      width: 60px;
+    }
+
+    .toggle-btn {
+      background: none;
+      border: none;
+      font-size: 24px;
+      color: white;
+      cursor: pointer;
+      align-self: flex-start;
+      margin-bottom: 30px;
+    }
+
+    .logo {
+      font-family: 'Inspiration', cursive;
+      font-size: 30px;
+      color: white;
+      margin-bottom: 40px;
+      transition: opacity 0.3s, transform 0.3s;
+      white-space: nowrap;
+    }
+
+    .sidebar.collapsed .logo,
+    .sidebar.collapsed .nav-item span {
+      opacity: 0;
+      transform: scaleX(0);
+      transition: opacity 0.3s, transform 0.3s;
+    }
+
+    .nav-item {
+      color: white;
+      font-size: 18px;
+      padding: 10px 0;
+      width: 100%;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+
+    .nav-item:hover {
+      background-color: rgba(255, 255, 255, 0.1);
+    }
+
+    .main {
+      flex-grow: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      padding: 20px;
+    }
+
+    .welcome-text {
+      font-size: 3.5rem;
+      opacity: 0.1;
+      font-weight: bold;
+      margin-top: 40px;
+    }
+
+    .new-note-btn {
+      background-color: var(--button-green);
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 80px;
+      height: 80px;
+      font-size: 40px;
+      cursor: pointer;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+      margin-bottom: 10px;
+    }
+
+    .new-note-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .nav-item a {
+        text-decoration: none;
+        color: inherit;
+        display: block;
+        width: 100%;
+      }
+    @media (max-width: 768px) {
+      .welcome-text {
+        font-size: 2rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="sidebar">
+    <a href="homepage.html">Home</a>
+    <a href="history.html">History</a>
+    <a href="index.html">New Diagnosis</a>
+  </div>
+
+  <div class="main">
+    <h1>Patient Diagnosis</h1>
+
+    <div id="patient-details"></div>
+
+    <form id="diagnosis-form">
+      <h3>Select Symptoms:</h3>
+      <div id="symptom-list" style="max-height: 200px; overflow-y: scroll;"></div>
+      <button type="submit">Diagnose</button>
+    </form>
+
+    <div id="result-section" style="display:none;">
+      <h2>Prediction: <span id="disease"></span></h2>
+      <h3>Precautions:</h3>
+      <ul id="precautions"></ul>
+      <h3>Prescription:</h3>
+      <ul id="prescription"></ul>
+
+      <button id="save-report">Save Report</button>
+      <button onclick="window.open('print.html')">Print</button>
+    </div>
+  </div>
+
+  <script>
+    const patientData = JSON.parse(localStorage.getItem("patientData"));
+    if (!patientData) {
+      window.location.href = "index.html";
+    }
+
+    // Show patient details
+    document.getElementById("patient-details").innerHTML = `
+      <p><strong>Name:</strong> ${patientData.name}</p>
+      <p><strong>Age:</strong> ${patientData.age}</p>
+      <p><strong>Blood Pressure:</strong> ${patientData.bp}</p>
+      <p><strong>Cholesterol:</strong> ${patientData.cholesterol}</p>
+    `;
+
+    // Fetch symptoms from backend
+    fetch("/")
+      .then(res => res.text())
+      .then(html => {
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, "text/html");
+        const symptoms = Array.from(doc.querySelectorAll("option")).map(opt => opt.value);
+        const list = document.getElementById("symptom-list");
+        symptoms.forEach(sym => {
+          const checkbox = document.createElement("input");
+          checkbox.type = "checkbox";
+          checkbox.name = "symptoms";
+          checkbox.value = sym;
+          const label = document.createElement("label");
+          label.textContent = sym;
+          label.prepend(checkbox);
+          list.appendChild(label);
+          list.appendChild(document.createElement("br"));
+        });
+      });
+
+    document.getElementById("diagnosis-form").addEventListener("submit", function(e) {
+      e.preventDefault();
+      const checked = Array.from(document.querySelectorAll("input[name='symptoms']:checked"))
+        .map(cb => cb.value);
+
+      fetch("/diagnose", {
+        method: "POST",
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({
+          age: patientData.age,
+          bp: patientData.bp,
+          cholesterol: patientData.cholesterol,
+          symptoms: checked
+        })
+      })
+      .then(res => res.text())
+      .then(html => {
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, "text/html");
+
+        const disease = doc.getElementById("disease").textContent;
+        const precautions = Array.from(doc.querySelectorAll("#precautions li")).map(li => li.textContent);
+        const prescription = Array.from(doc.querySelectorAll("#prescription li")).map(li => li.textContent);
+
+        document.getElementById("disease").textContent = disease;
+        document.getElementById("precautions").innerHTML = precautions.map(p => `<li>${p}</li>`).join("");
+        document.getElementById("prescription").innerHTML = prescription.map(p => `<li>${p}</li>`).join("");
+
+        document.getElementById("result-section").style.display = "block";
+
+        localStorage.setItem("diagnosisResult", JSON.stringify({
+          ...patientData,
+          disease,
+          precautions,
+          prescription,
+          date: new Date().toLocaleString()
+        }));
+      });
+    });
+
+    document.getElementById("save-report").addEventListener("click", () => {
+      const saved = JSON.parse(localStorage.getItem("history") || "[]");
+      const report = JSON.parse(localStorage.getItem("diagnosisResult"));
+      saved.push(report);
+      localStorage.setItem("history", JSON.stringify(saved));
+      alert("Report saved!");
+    });
+  </script>
+</body>
+</html>

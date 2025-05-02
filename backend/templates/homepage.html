@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Doctor's Diary</title>
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inika&family=Inspiration&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --sidebar-green: #619769;
+      --main-bg: #D9F9D1;
+      --button-green: #51D05E;
+      --card-gray: #D9D9D9;
+      --text-dark: #1E1E1E;
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Inika', serif;
+      background-color: var(--main-bg);
+      display: flex;
+      height: 100vh;
+      color: var(--text-dark);
+    }
+
+    .sidebar {
+      background-color: var(--sidebar-green);
+      width: 250px;
+      transition: width 0.3s ease;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+
+    .sidebar.collapsed {
+      width: 60px;
+    }
+
+    .toggle-btn {
+      background: none;
+      border: none;
+      font-size: 24px;
+      color: white;
+      cursor: pointer;
+      align-self: flex-start;
+      margin-bottom: 30px;
+    }
+
+    .logo {
+      font-family: 'Inspiration', cursive;
+      font-size: 30px;
+      color: white;
+      margin-bottom: 40px;
+      transition: opacity 0.3s, transform 0.3s;
+      white-space: nowrap;
+    }
+
+    .sidebar.collapsed .logo,
+    .sidebar.collapsed .nav-item span {
+      opacity: 0;
+      transform: scaleX(0);
+      transition: opacity 0.3s, transform 0.3s;
+    }
+
+    .nav-item {
+      color: white;
+      font-size: 18px;
+      padding: 10px 0;
+      width: 100%;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+
+    .nav-item:hover {
+      background-color: rgba(255, 255, 255, 0.1);
+    }
+
+    .main {
+      flex-grow: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      padding: 20px;
+    }
+
+    .welcome-text {
+      font-size: 3.5rem;
+      opacity: 0.1;
+      font-weight: bold;
+      margin-top: 40px;
+    }
+
+    .new-note-btn {
+      background-color: var(--button-green);
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 80px;
+      height: 80px;
+      font-size: 40px;
+      cursor: pointer;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+      margin-bottom: 10px;
+    }
+
+    .new-note-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .nav-item a {
+        text-decoration: none;
+        color: inherit;
+        display: block;
+        width: 100%;
+      }
+    @media (max-width: 768px) {
+      .welcome-text {
+        font-size: 2rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="sidebar" id="sidebar">
+    <button class="toggle-btn" onclick="toggleSidebar()">☰</button>
+    <div class="logo">Doctor's Diary</div>
+    <div class="nav-item"><a href="/">Home</a></div>
+    <div class="nav-item"><a href="/history">History</a></div>
+  </div>
+
+  <div class="main">
+    <div>
+      <div class="new-note-wrapper">
+        <button class="new-note-btn" onclick="location.href='/index'">+</button>
+        <div style="font-size: 1.2rem; font-weight: bold;">New Note</div>
+      </div>
+      <div class="welcome-text">Hey Doc, ready to jot?</div>
+    </div>
+  </div>
+
+  <script>
+    function toggleSidebar() {
+      const sidebar = document.getElementById('sidebar');
+      sidebar.classList.toggle('collapsed');
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Patient Summary</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inika&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Inika', serif;
+      padding: 60px;
+      background: #f9f9f9;
+      color: #333;
+      min-height: 100vh;
+      box-sizing: border-box;
+      position: relative;
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 40px;
+      color: #1e1e1e;
+    }
+
+    .section {
+      background: #ffffff;
+      border-left: 6px solid #4e73df;
+      padding: 20px 25px;
+      margin-bottom: 25px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+      border-radius: 10px;
+    }
+
+    .section h3 {
+      margin-top: 0;
+      margin-bottom: 12px;
+      border-bottom: 1px solid #e0e0e0;
+      padding-bottom: 5px;
+      color: #2c3e50;
+    }
+
+    .section p {
+      margin: 6px 0;
+      line-height: 1.5;
+    }
+
+    footer {
+      margin-top: 40px;
+      text-align: right;
+      font-size: 16px;
+      color: #333;
+    }
+
+    footer p {
+      margin: 8px 0;
+    }
+
+    #buttons {
+      position: fixed;
+      bottom: 30px;
+      right: 40px;
+      display: flex;
+      gap: 12px;
+      z-index: 1000;
+    }
+
+    button {
+      font-family: 'Inika', serif;
+      padding: 10px 18px;
+      background-color: #4e73df;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 16px;
+      transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #2e59d9;
+    }
+
+    @media print {
+      #buttons {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <h2>Complete Patient Report</h2>
+
+  <div class="section">
+    <h3>Patient Info</h3>
+    <p><strong>Name:</strong> <span id="name"></span></p>
+    <p><strong>Age:</strong> <span id="age"></span></p>
+    <p><strong>Gender:</strong> <span id="gender"></span></p>
+    <p><strong>Date:</strong> <span id="date"></span></p>
+    <p><strong>Blood Pressure:</strong> <span id="bp"></span></p>
+    <p><strong>Cholesterol:</strong> <span id="cholesterol"></span></p>
+    <p><strong>Symptoms:</strong> <span id="symptoms"></span></p>
+  </div>
+
+  <div class="section" id="diagnosisSection">
+    <h3>Diagnosis & Prescription</h3>
+    <div id="diagnosisBlock"></div>
+  </div>
+
+  <div class="section" id="manualSection" style="display:none;">
+    <h3>Manual Notes</h3>
+    <p id="manualBlock"></p>
+  </div>
+
+  <footer>
+    <p><strong>Doctor's Signature:</strong> _______________________________</p>
+    <p><strong>Date:</strong> ____________</p>
+  </footer>
+
+  <div id="buttons">
+    <button onclick="window.print()">Print</button>
+    <button onclick="saveReport()">Save Report</button>
+  </div>
+
+  <script>
+    window.onload = function () {
+      const patientInfo = JSON.parse(localStorage.getItem('patientInfo')) || {};
+      const diagnosisInfo = JSON.parse(localStorage.getItem('diagnosisInfo')) || {};
+
+      document.getElementById('name').textContent = patientInfo.name || '-';
+      document.getElementById('age').textContent = patientInfo.age || '-';
+      document.getElementById('gender').textContent = patientInfo.gender || '-';
+      document.getElementById('date').textContent = patientInfo.date || '-';
+      document.getElementById('bp').textContent = patientInfo.bp || '-';
+      document.getElementById('cholesterol').textContent = patientInfo.cholesterol || '-';
+      document.getElementById('symptoms').textContent = (patientInfo.symptoms || []).join(', ') || '-';
+
+      document.getElementById('diagnosisBlock').innerHTML = diagnosisInfo.htmlContent || '<p>No diagnosis available.</p>';
+
+      if (diagnosisInfo.manualEntry && diagnosisInfo.manualEntry.trim() !== '') {
+        document.getElementById('manualBlock').innerHTML = diagnosisInfo.manualEntry.replace(/\n/g, '<br>');
+        document.getElementById('manualSection').style.display = 'block';
+      }
+    };
+
+    function saveReport() {
+      const name = document.getElementById('name').textContent.trim();
+      const date = document.getElementById('date').textContent.trim();
+      const content = document.documentElement.outerHTML; // save full page content
+
+      const savedReports = JSON.parse(localStorage.getItem('savedReports') || '[]');
+      savedReports.push({ name, date, content });
+      localStorage.setItem('savedReports', JSON.stringify(savedReports));
+      alert("Report saved successfully!");
+    }
+  </script>
+</body>
+</html>
